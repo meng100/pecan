@@ -1,0 +1,105 @@
+---
+title: "distributions"
+output: html_document
+---
+
+```{r}
+library(R6)
+
+base_dir <- "/projectnb/dietzelab/arober/pecan/modules/prob.tools"
+code_dir <- file.path(base_dir, "R")
+dist_dir <- file.path(code_dir, "distributions")
+
+source(file.path(code_dir, "utils.r"))
+source(file.path(dist_dir, "distribution_base.r"))
+source(file.path(dist_dir, "normal.r"))
+source(file.path(dist_dir, "multivariate_normal.r"))
+```
+
+
+```{r}
+# Should throw error (add this as unit test)
+abstract_dist <- Distribution$new()
+```
+      
+```{r}
+# Univariate normal.
+x <- Normal$new()
+x$print()
+
+print("Samples:")
+print(x$sample())
+print(x$sample(flat=TRUE))
+print(x$sample(5))
+print(x$sample(5, flat=TRUE))
+
+print("Log Density evaluations:")
+samp_arr <- x$sample()
+samp_flat <- x$sample(flat=TRUE)
+print(x$log_density(samp_arr))
+print(x$log_density(samp_flat))
+```
+
+```{r}
+# Multivariate normal.
+d <- 3
+S <- matrix(rnorm(d*d), nrow=3, ncol=3)
+C <- tcrossprod(S)
+
+y <- MultivariateNormal$new(cov=C)
+y$print()
+
+print("Samples:")
+print(y$sample())
+print(y$sample(flat=TRUE))
+print(y$sample(flat=TRUE, simplify=TRUE))
+print(y$sample(4))
+
+print("Log Density evaluations:")
+samp_arr <- y$sample()
+samp_arr_simple <- drop(samp_arr)
+samp_mat <- y$sample(4)
+
+print(y$log_density(samp_arr))
+print(y$log_density(samp_arr_simple))
+print(y$log_density(samp_mat))
+```
+
+```{r}
+z <- ProductDistribution$new(x, y)
+z$print(print_components=TRUE)
+```
+```{r}
+# Sampling
+
+samp_flat <- z$sample(3, flat=TRUE)
+samp_arr <- z$sample(3, flat=FALSE)
+
+print("Flat:")
+print(samp_flat)
+
+print("Array:")
+print(samp_arr)
+
+print("Flat to array:")
+print(z$transform_to_array(samp_flat))
+
+print("Array to flat:")
+print(z$transform_to_flat(samp_arr))
+```
+
+
+
+
+
+Things to implement when defining a new distribution:
+1. Inherit from `Distribution`.
+2. Set the `.constraint` private variable.
+3. Implement any relevant private methods for distribution functionality; most
+commonly will be `.sample()` and `.log_density()`.
+4. Implement `.validate_dist_params()` (currently this is not forced, but could be).
+
+
+
+
+
