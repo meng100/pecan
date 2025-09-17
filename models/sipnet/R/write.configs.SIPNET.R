@@ -524,73 +524,10 @@ override_sipnet_default_params <- function(param, settings, defaults, trait.valu
       }
     }
   }
-  if (!is.null(IC)) {
-    ic.names <- names(IC)
-    ## plantWoodInit gC/m2
-    plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
-    if (all(plant_wood_vars %in% ic.names)) {
-      # reconstruct total wood C
-      if(IC$abvGrndWoodFrac < 0.05){
-        wood_total_C <- IC$AbvGrndWood
-      }else{
-        wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
-      }
-      
-      #Sanity check
-      if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
-        wood_total_C <- 0
-        if (round(IC$AbvGrndWood) > 0 & round(IC$abvGrndWoodFrac, 3) == 0)
-          PEcAn.logger::logger.warn(
-            paste0(
-              "There is a major problem with ",
-              run.id,
-              " in either the model's parameters or IC.",
-              "Because the ABG is estimated=",
-              IC$AbvGrndWood,
-              " while AGB Frac is estimated=",
-              IC$abvGrndWoodFrac
-            )
-          )
-      }
-      param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
-      param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
-      param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
-    }
-    ## laiInit m2/m2
-    if ("lai" %in% ic.names) {
-      param[which(param[, 1] == "laiInit"), 2] <- IC$lai
-    }
-    ## litterInit gC/m2
-    if ("litter_carbon_content" %in% ic.names) {
-      param[which(param[, 1] == "litterInit"), 2] <- IC$litter_carbon_content
-    }
-    ## soilInit gC/m2
-    if ("soil" %in% ic.names) {
-      param[which(param[, 1] == "soilInit"), 2] <- IC$soil
-    }
-    ## litterWFracInit fraction
-    if ("litter_mass_content_of_water" %in% ic.names) {
-      #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
-      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
-    }
-    ## soilWater IC$soilWater is in kg/m2, and soilWHC is in cm
-    if ("soilWater" %in% ic.names) {
-      param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWater/(param[which(param[, 1] == "soilWHC"), 2]*10)
-    }
-    ## soilWFracInit fraction
-    if ("soilWFrac" %in% ic.names) {
-      param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac
-    }
-    ## snowInit cm water equivalent
-    if ("SWE" %in% ic.names) {
-      param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
-    }
-    ## microbeInit mgC/g soil
-    if ("microbe" %in% ic.names) {
-      param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
-    }
-    
-  } else if (length(settings$run$inputs$poolinitcond$path) > 0) {
+  # Edits with IC starts here: switched order for the if/ifelse statement and make it an if-if 
+  # logistics: first read in the nc file, overwrite specific values with what we pass
+  #            in through the IC argument
+  if (length(settings$run$inputs$poolinitcond$path) > 0) {
     IC.path <- settings$run$inputs$poolinitcond$path
     if (length(IC.path) > 1) {
       PEcAn.logger::logger.error(
@@ -713,7 +650,87 @@ override_sipnet_default_params <- function(param, settings, defaults, trait.valu
   } else {
     #some stuff about IC file that we can give in lieu of actual ICs
   }
-  
+  # Edits:
+  # Conditional statements added to address pecan variable names
+  # Additional arguments added to address ic vars missing from original IC options
+  if (!is.null(IC)) {
+    ic.names <- names(IC)
+    ## plantWoodInit gC/m2
+    plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
+    if (all(plant_wood_vars %in% ic.names)) {
+      # reconstruct total wood C
+      if(IC$abvGrndWoodFrac < 0.05){
+        wood_total_C <- IC$AbvGrndWood
+      }else{
+        wood_total_C <- IC$AbvGrndWood / IC$abvGrndWoodFrac
+      }
+      
+      #Sanity check
+      if (is.infinite(wood_total_C) | is.nan(wood_total_C) | wood_total_C < 0) {
+        wood_total_C <- 0
+        if (round(IC$AbvGrndWood) > 0 & round(IC$abvGrndWoodFrac, 3) == 0)
+          PEcAn.logger::logger.warn(
+            paste0(
+              "There is a major problem with ",
+              run.id,
+              " in either the model's parameters or IC.",
+              "Because the ABG is estimated=",
+              IC$AbvGrndWood,
+              " while AGB Frac is estimated=",
+              IC$abvGrndWoodFrac
+            )
+          )
+      }
+      param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
+      param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
+      param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
+    }
+    ## laiInit m2/m2
+    if ("lai" %in% ic.names) {
+      param[which(param[, 1] == "laiInit"), 2] <- IC$lai
+    } else if ("LAI" %in% ic.names) {
+      param[which(param[, 1] == "laiInit"), 2] <- IC$LAI
+    }
+    ## litterInit gC/m2
+    if ("litter_carbon_content" %in% ic.names) {
+      param[which(param[, 1] == "litterInit"), 2] <- IC$litter_carbon_content
+    }
+    ## soilInit gC/m2
+    if ("soil" %in% ic.names) {
+      param[which(param[, 1] == "soilInit"), 2] <- IC$soil
+    } else if ("TotSoilCarb" %in% ic.names) {    # TotSoilCarb kgC/m2 to gC/m2
+      param[which(param[, 1] == "soilInit"), 2] <- IC$TotSoilCarb * 1000
+    }
+    ## litterWFracInit fraction
+    if ("litter_mass_content_of_water" %in% ic.names) {
+      #here we use litterWaterContent/litterWHC to calculate the litterWFracInit
+      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litter_mass_content_of_water/(param[which(param[, 1] == "litterWHC"), 2]*10)
+    }
+    ## Redo pecan map
+    if ("SoilMoist" %in% ic.names && !("soilWater" %in% ic.names)) {
+      IC$soilWater <- max(0, IC$SoilMoist)
+    }
+    if ("SoilMoistFrac" %in% ic.names && !("soilWFrac" %in% ic.names)) {
+      soilWFrac <- IC$SoilMoistFrac / 100
+      if (soilWFrac < 0 || soilWFrac > 1) soilWFrac <- 0.5
+    }
+    ## soilWater IC$soilWater is in kg/m2, and soilWHC is in cm
+    if ("soilWater" %in% ic.names) {
+      param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWater/(param[which(param[, 1] == "soilWHC"), 2]*10)
+    }
+    ## soilWFracInit fraction
+    if ("soilWFrac" %in% ic.names) {
+      param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac
+    }
+    ## snowInit cm water equivalent
+    if ("SWE" %in% ic.names) {
+      param[which(param[, 1] == "snowInit"), 2] <- IC$SWE
+    }
+    ## microbeInit mgC/g soil
+    if ("microbe" %in% ic.names) {
+      param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
+    }
+  } 
   
   if (!is.null(settings$run$inputs$soilmoisture)) {
     #read soil moisture netcdf file, grab closet date to start_date, set equal to soilWFrac
