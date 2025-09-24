@@ -78,9 +78,11 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
   
   if ("TotSoilCarb" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    # analysis.save[[length(analysis.save) + 1]] <- PEcAn.utils::ud_convert(new.state$TotSoilCarb, 'kg m-2', 'g m-2') # kgC/m2 -> gC/m2
+    analysis.save[[length(analysis.save) + 1]] <- new.state$TotSoilCarb    # conversion done in write.config
     if (new.state$TotSoilCarb < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("soil")
+    # names(analysis.save[[length(analysis.save)]]) <- c("soil")
+    names(analysis.save[[length(analysis.save)]]) <- c("TotSoilCarb")
   }
   
   if("litter_mass_content_of_water" %in% variables){
@@ -92,13 +94,16 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if ("SoilMoist" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoist
     if (new.state$SoilMoist < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("soilWater")
+    # names(analysis.save[[length(analysis.save)]]) <- c("soilWater")
+    names(analysis.save[[length(analysis.save)]]) <- c("SoilMoist")
   }
   
   if ("SoilMoistFrac" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac/100  ## unitless
-    if (analysis.save[[length(analysis.save)]] < 0 || analysis.save[[length(analysis.save)]] > 1) analysis.save[[length(analysis.save)]] <- 0.5
-    names(analysis.save[[length(analysis.save)]]) <- c("soilWFrac")
+    # analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac/100  ## unitless
+    # if (analysis.save[[length(analysis.save)]] < 0 || analysis.save[[length(analysis.save)]] > 1) analysis.save[[length(analysis.save)]] <- 0.5
+    # names(analysis.save[[length(analysis.save)]]) <- c("soilWFrac")
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SoilMoistFrac
+    names(analysis.save[[length(analysis.save)]]) <- c("SoilMoistFrac").  # mapping done in config
   }
   
   if ("SWE" %in% variables) {
@@ -110,7 +115,8 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if ("LAI" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LAI  
     if (new.state$LAI < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("lai")
+    # names(analysis.save[[length(analysis.save)]]) <- c("lai")
+    names(analysis.save[[length(analysis.save)]]) <- c("LAI")
   }
   
   if (!is.null(analysis.save) && length(analysis.save)>0){
