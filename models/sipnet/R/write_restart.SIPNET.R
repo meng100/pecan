@@ -68,7 +68,8 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if ("LeafC" %in% variables) {
     analysis.save[[length(analysis.save) + 1]] <- new.state$LeafC * prior.sla * 2  ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
     if (new.state$LeafC < 0) analysis.save[[length(analysis.save)]] <- 0
-    names(analysis.save[[length(analysis.save)]]) <- c("lai")
+    # names(analysis.save[[length(analysis.save)]]) <- c("lai")
+    names(analysis.save[[length(analysis.save)]]) <- c("LAI")
   }
   
   if ("litter_carbon_content" %in% variables) {
